@@ -1,1 +1,221 @@
 
+package com.stepdef;
+
+import org.testng.Assert;
+
+import com.common.Base;
+import com.pageobjectmodel.CustomerServicePage;
+import com.pageobjectmodel.DigitalServicePage;
+import com.pageobjectmodel.HomePage;
+
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+
+public class StepDef extends Base {
+
+	HomePage hp;
+	CustomerServicePage csp;
+	DigitalServicePage dsp;
+
+@Given("^user able to go to home page$")
+public void user_able_to_go_to_home_page() throws Throwable {
+   getDriver();
+    
+}
+
+@When("^user able to click customer service$")
+public void user_able_to_click_customer_service() throws Throwable {
+  // driver.findElement(By.xpath("//a[contains(text(),'Customer Service')]")).click();
+    //driver.findElement(By.linkText("Customer Service")).click();
+	
+   HomePage hp=new HomePage(driver);
+   hp.clickCustomerServiceLink();
+}
+
+@Then("^user should go to customer service page$")
+public void user_should_go_to_customer_service_page() throws Throwable {
+   Assert.assertEquals(driver.getTitle(), "Amazon.com Help: Help & Customer Service");
+  
+}
+@When("^I click on digital service and support$")
+public void i_click_on_digital_service_and_support() throws Throwable {
+    //driver.findElement(By.xpath("//h3[contains(text(),'Digital Services and Device Support')]")).click();
+   csp=new CustomerServicePage(driver);
+   csp.clickDigitalServiceLink();
+}
+
+@When("^I search by entering a \"([^\"]*)\" and click go button$")
+public void i_search_by_entering_a_and_click_go_button(String term) throws Throwable {
+    
+  // driver.findElement(By.id("helpsearch")).sendKeys(term);
+  // driver.findElement(By.id("//*[@id=\"helpSearchSubmit\"]/span/input")).submit();
+	
+	dsp=new DigitalServicePage(driver);
+	dsp.enterSearch(term);
+	dsp.clickGo();
+}
+
+@Then("^I receive relevant result$")
+public void i_receive_relevant_result() throws Throwable {
+    
+   String title=driver.getTitle();
+   Assert.assertEquals(title, "Amazon.com Help: Help & Customer Service");
+    driver.quit();
+   
+}
+
+
+}
+############################
+package com.testrunner;
+
+import cucumber.api.CucumberOptions;
+import cucumber.api.testng.AbstractTestNGCucumberTests;
+
+@CucumberOptions(
+	
+		features="Feature",
+		glue="com.stepdef",
+		tags="@Customerservice",
+		plugin="pretty",
+		monochrome=true
+		)
+public class TestRunner extends AbstractTestNGCucumberTests{
+	
+
+}
+
+################################
+package com.pageobjectmodel;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+//import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.FindBy;
+
+public class HomePage extends BasePage{
+	public HomePage(WebDriver driver) {
+		super(driver);
+	}
+	//driver.findElement(By.xpath("//a[contains(text(),'Customer Service')]")).click();
+	//driver.findElement(By.linkText("Customer Service")).click();
+	
+	@FindBy(linkText="Customer Service")
+	private WebElement linkcustomerService;
+	
+	public void clickCustomerServiceLink() {
+		linkcustomerService.click();
+	}
+		
+	}
+@@@@@@@@@@@@@@@@@@@@@@@@
+
+package com.pageobjectmodel;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+
+public class DigitalServicePage extends BasePage{
+
+	public DigitalServicePage(WebDriver driver) {
+		super(driver);
+	}
+	
+	//driver.findElement(By.id("helpsearch")).sendkeys(term);
+	//driver.findElement(By.id(helpSearchSubmit-announce")).submit();
+	
+	@FindBy(id="helpsearch")
+	private WebElement helpsearch;
+	
+	public void enterSearch(String term) {
+		helpsearch.sendKeys(term);
+		
+	}
+	@FindBy(id="helpSearchSubmit-announce")
+	private WebElement goButton;
+	
+	public void clickGo() {
+		goButton.submit();
+	}
+}
+
+###################################
+package com.pageobjectmodel;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+
+public class CustomerServicePage extends BasePage{
+	
+	public CustomerServicePage(WebDriver driver) {
+		super(driver);
+	}
+	//driver.findElement(By.xpath("//h3[contains(text(),'Digital Services and Device Support')]")).click();
+	
+	@FindBy(xpath="//h3[contains(text(),'Digital Services and Device Support')]")
+	private WebElement linkDigitalService;
+	
+	public void clickDigitalServiceLink() {
+		linkDigitalService.click();
+	}
+}
+#####################################
+
+package com.pageobjectmodel;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.PageFactory;
+
+public class BasePage {
+	
+
+	public WebDriver driver;
+	
+	public BasePage(WebDriver driver){
+		
+		this.driver=driver;
+		PageFactory.initElements(driver, this);
+
+}
+}
+##############################
+package com.common;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class Base {
+	public WebDriver driver;
+	public WebDriver getDriver() {
+		System.setProperty("webdriver.chrome.driver", "./Browser/chromedriver.exe");
+		driver=new ChromeDriver();
+		driver.get("https://www.amazon.com/");
+		driver.manage().window().maximize();
+		driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+		return driver;
+	}
+
+}
+
+###########################
+
+@Customerservice
+Feature: customer service verification
+Scenario Outline: customer service functional testing
+	Given user able to go to home page
+	When user able to click customer service
+	Then user should go to customer service page
+	When I click on digital service and support
+	And I search by entering a "<term>" and click go button
+	Then I receive relevant result
+    Examples:
+       |term|
+       |return item|
+       |billing questions|
+       |past order questions|
